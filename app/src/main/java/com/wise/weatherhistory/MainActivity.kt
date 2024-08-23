@@ -21,10 +21,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.wise.weatherhistory.model.KTorGeocodingService
+import com.wise.weatherhistory.model.KTorWeatherHistoryService
 import com.wise.weatherhistory.model.Location
+import com.wise.weatherhistory.model.WeatherData
 import com.wise.weatherhistory.ui.theme.WeatherHistoryTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -47,9 +50,19 @@ class MainActivity : ComponentActivity() {
 fun Greeting(name: String, modifier: Modifier = Modifier) {
     var requestName by remember { mutableStateOf("Padova") }
     var results by remember { mutableStateOf(emptyList<Location>()) }
+    val firstResult = results.firstOrNull()
     LaunchedEffect(key1 = requestName){
         launch(Dispatchers.IO){
             results=KTorGeocodingService().getLocations(requestName)
+        }
+    }
+
+    var weatherData by remember { mutableStateOf(emptyList<WeatherData>()) }
+    LaunchedEffect(key1 = firstResult){
+        launch (Dispatchers.IO){
+            if(firstResult!=null) {
+                weatherData = KTorWeatherHistoryService().getWeatherData(firstResult,LocalDate.now().minusDays(1)..LocalDate.now())
+            }
         }
     }
 
@@ -58,6 +71,12 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
         LazyColumn {
             items(results) {
                 Text(text = "${it.name} -> ${it.country}")
+            }
+        }
+        Text(text = "Weather")
+        LazyColumn {
+            items(weatherData) {
+                Text(text = "${it.time} -> ${it.temperature}")
             }
         }
 
