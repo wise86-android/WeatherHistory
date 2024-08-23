@@ -6,8 +6,14 @@ import androidx.compose.material3.RangeSlider
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.FloatState
+import androidx.compose.runtime.MutableFloatState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.datastore.dataStore
 import androidx.lifecycle.ViewModel
@@ -33,10 +39,10 @@ class SettingsViewModel(private val dataStore:WeatherQuerySettings) : ViewModel(
 @Composable
 fun SettingsPage(viewModel: SettingsViewModel){
     val selectedValue by viewModel.pastDays.collectAsState()
-
+    var slideValue by remember { mutableFloatStateOf(selectedValue.toFloat()) }
     Column {
         Text(text = "select day")
-        Slider(value = selectedValue.toFloat(), onValueChange = { viewModel.setPastDay(it.toLong())} , valueRange = 1.0f..30.0f , steps =30)
+        Slider(value = slideValue, onValueChange = {slideValue = it} , onValueChangeFinished = {viewModel.setPastDay(slideValue.toLong())}, valueRange = 1.0f..30.0f , steps =30)
     }
 }
 

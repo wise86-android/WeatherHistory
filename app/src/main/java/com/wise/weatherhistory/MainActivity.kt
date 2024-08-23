@@ -1,6 +1,7 @@
 package com.wise.weatherhistory
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Column
@@ -33,12 +34,17 @@ import com.wise.weatherhistory.ui.components.Search
 import com.wise.weatherhistory.ui.components.TemperaturePlot
 import com.wise.weatherhistory.ui.theme.WeatherHistoryTheme
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -53,12 +59,7 @@ class MainActivity : ComponentActivity() {
         val viewModel = MainViewModel(querySettings)
         val settingsViewModel = SettingsViewModel(querySettings)
         setContent {
-            val meteoData by viewModel.meteoData.collectAsState()
-            val timePickerState = rememberDateRangePickerState(
-                initialSelectedStartDateMillis = LocalDateTime.now().minusDays(7L).toEpochSecond(ZoneOffset.UTC)*1000,
-                initialSelectedEndDateMillis = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)*1000,
-                initialDisplayMode = DisplayMode.Picker,
-                yearRange = LocalDate.now().year..LocalDate.now().year)
+            val meteoData by viewModel.meteoData.collectAsState(emptyList())
             WeatherHistoryTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(
@@ -87,9 +88,10 @@ class MainActivity : ComponentActivity() {
 
 
 @FlowPreview
-class MainViewModel(private val querySettings: WeatherQuerySettings) : ViewModel() {
+class MainViewModel(querySettings: WeatherQuerySettings) : ViewModel() {
 
     val geocodingService = KTorGeocodingService()
+    val historyService = KTorWeatherHistoryService()
 
     //first state whether the search is happening or not
     private val _isSearching = MutableStateFlow(false)
@@ -103,8 +105,18 @@ class MainViewModel(private val querySettings: WeatherQuerySettings) : ViewModel
     private val _locationList = MutableStateFlow<List<Location>>(emptyList())
     val locationList = _locationList.asStateFlow()
 
-    private val _meteoData = MutableStateFlow<List<WeatherData>>(emptyList())
-    val meteoData = _meteoData.asStateFlow()
+    private val selectedLocation= MutableStateFlow<Location>(Location(0.0f,0.0f,0.0f,"",""))
+    
+    private val daysToLoad = querySettings.getDefaultTimeRange()
+        .map { val today = LocalDate.now(); today.minusDays(it.toDays()).. today }
+        
+    val meteoData = selectedLocation
+        .combine(daysToLoad,historyService::getWeatherData)
+        .map { Log.d("MainViewModel","DataSize: ${it.size}");it }
+        .stateIn(viewModelScope,
+            SharingStarted.WhileSubscribed(300),
+            emptyList()
+        )
     init {
         viewModelScope.launch {
             _searchText.debounce(500).collectLatest { text ->
@@ -137,12 +149,7 @@ class MainViewModel(private val querySettings: WeatherQuerySettings) : ViewModel
     fun onSelectLocation(location: Location){
         _isSearching.value = !_isSearching.value
         _searchText.update { location.name }
-        viewModelScope.launch {
-            querySettings.getDefaultTimeRange()
-                .map { val today = LocalDate.now(); today.minusDays(it.toDays()).. today }
-                .map { timeRange-> KTorWeatherHistoryService().getWeatherData(location, timeRange)
-            }.collectLatest (_meteoData::emit)
-        }
+        selectedLocation.value = location
     }
 
 }

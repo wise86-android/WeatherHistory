@@ -1,6 +1,7 @@
 package com.wise.weatherhistory.ui.components
 
 import android.graphics.Color
+import android.util.Log
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
@@ -21,6 +22,7 @@ import java.time.format.DateTimeFormatter
 
 @Composable
 fun TemperaturePlot(data:List<WeatherData>){
+
     AndroidView(
         modifier = Modifier
             .fillMaxWidth()
@@ -51,7 +53,7 @@ fun TemperaturePlot(data:List<WeatherData>){
             })
             lineData.setDrawValues(false)
             view.data = lineData
-            view.notifyDataSetChanged()
+            view.invalidate()
         }
     )
 }
