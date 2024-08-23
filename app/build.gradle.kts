@@ -87,8 +87,9 @@ dependencies {
 
     testImplementation("io.ktor:ktor-client-mock:$ktor_version")
 
-    implementation("com.patrykandpatrick.vico:compose-m3:1.14.0")
-    implementation("com.patrykandpatrick.vico:core:1.14.0")
-    implementation("com.github.AppDevNext:AndroidChart:3.1.0.17")
+    implementation("androidx.datastore:datastore-preferences:1.0.0")
+    implementation("androidx.datastore:datastore:1.0.0")
 
+
+    implementation("com.github.AppDevNext:AndroidChart:3.1.0.21")
 }

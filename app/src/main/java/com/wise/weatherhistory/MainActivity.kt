@@ -1,56 +1,36 @@
 package com.wise.weatherhistory
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.DisplayMode
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.material3.rememberDateRangePickerState
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.github.mikephil.charting.data.LineData
-import com.github.mikephil.charting.data.LineDataSet
-import com.patrykandpatrick.vico.compose.axis.horizontal.rememberBottomAxis
-import com.patrykandpatrick.vico.compose.axis.vertical.rememberStartAxis
-import com.patrykandpatrick.vico.compose.chart.Chart
-import com.patrykandpatrick.vico.compose.chart.column.columnChart
-import com.patrykandpatrick.vico.core.entry.ChartEntryModelProducer
-import com.patrykandpatrick.vico.core.entry.entryOf
 import com.wise.weatherhistory.model.GeocodingService
 import com.wise.weatherhistory.model.KTorGeocodingService
 import com.wise.weatherhistory.model.KTorWeatherHistoryService
 import com.wise.weatherhistory.model.Location
 import com.wise.weatherhistory.model.WeatherData
+import com.wise.weatherhistory.model.WeatherQuerySettingsStoreData
+import com.wise.weatherhistory.ui.SettingsPage
+import com.wise.weatherhistory.ui.SettingsViewModel
 import com.wise.weatherhistory.ui.components.Search
 import com.wise.weatherhistory.ui.components.TemperaturePlot
 import com.wise.weatherhistory.ui.theme.WeatherHistoryTheme
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -59,6 +39,7 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.ZoneOffset
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -66,8 +47,14 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val viewModel = MainViewModel()
+        val settingsViewModel = SettingsViewModel(WeatherQuerySettingsStoreData(this))
         setContent {
             val meteoData by viewModel.meteoData.collectAsState()
+            val timePickerState = rememberDateRangePickerState(
+                initialSelectedStartDateMillis = LocalDateTime.now().minusDays(7L).toEpochSecond(ZoneOffset.UTC)*1000,
+                initialSelectedEndDateMillis = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)*1000,
+                initialDisplayMode = DisplayMode.Picker,
+                yearRange = LocalDate.now().year..LocalDate.now().year)
             WeatherHistoryTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(
@@ -81,6 +68,7 @@ class MainActivity : ComponentActivity() {
                         Column(modifier = Modifier.padding(it)) {
                             Search(viewModel)
                             Text(text = "Weather")
+                            SettingsPage(viewModel = settingsViewModel)
                             if(meteoData.size > 0) {
                                 TemperaturePlot(data = meteoData)
                             }
@@ -156,29 +144,4 @@ class MainViewModel : ViewModel() {
 fun lastWeek():ClosedRange<LocalDate>{
     val today = LocalDate.now()
     return today.minusDays(1L)..today
-}
-
-
-@Composable
-fun mpChart(data:List<WeatherData>){
-    AndroidView(
-        modifier = Modifier
-            .fillMaxWidth()
-            .fillMaxHeight(0.4f),
-        factory = { context ->
-        com.github.mikephil.charting.charts.LineChart(context).apply {
-
-        }},
-            update = {view ->
-                val temp = data.map { com.github.mikephil.charting.data.Entry(it.time.toEpochSecond(
-                    ZoneOffset.UTC).toFloat(),it.temperature) }
-                val lineData = LineData(LineDataSet(temp,"temp").apply {
-                    this.setDrawCircles(false)
-                    this.setDrawCircleHole(false)
-                })
-                lineData.setDrawValues(false)
-                view.data = lineData
-                view.notifyDataSetChanged()
-            }
-    )
 }
