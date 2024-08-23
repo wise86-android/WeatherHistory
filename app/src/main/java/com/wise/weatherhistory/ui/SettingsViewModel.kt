@@ -15,7 +15,8 @@ import javax.inject.Inject
 class SettingsViewModel @Inject constructor(private val dataStore: WeatherQuerySettingsService) : ViewModel(){
     val pastDays = dataStore.getLastTimeRange()
         .map { it.toDays() }
-        .stateIn(scope = viewModelScope, initialValue = 7L,
+        .stateIn(scope = viewModelScope,
+            initialValue = 7L,
             started = SharingStarted.WhileSubscribed(5000)
         )
 
