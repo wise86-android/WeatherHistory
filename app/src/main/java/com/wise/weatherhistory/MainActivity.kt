@@ -17,18 +17,18 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.wise.weatherhistory.model.WeatherQuerySettingsStoreData
 import com.wise.weatherhistory.ui.SettingsPage
-import com.wise.weatherhistory.ui.SettingsViewModel
 import com.wise.weatherhistory.ui.components.Search
 import com.wise.weatherhistory.ui.components.TemperaturePlot
 import com.wise.weatherhistory.ui.theme.WeatherHistoryTheme
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.FlowPreview
 
 @OptIn(ExperimentalMaterial3Api::class)
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
+    @OptIn(FlowPreview::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -45,7 +45,7 @@ class MainActivity : ComponentActivity() {
                         titleContentColor = MaterialTheme.colorScheme.primary,
                     ),title = { Text(text = "title")}) }){
                         Column(modifier = Modifier.padding(it)) {
-                            Search(viewModel)
+                            Search()
                             Text(text = "Weather")
                             SettingsPage()
                             if(meteoData.size > 0) {

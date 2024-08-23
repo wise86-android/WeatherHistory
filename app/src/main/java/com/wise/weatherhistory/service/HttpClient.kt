@@ -1,4 +1,4 @@
-package com.wise.weatherhistory.model
+package com.wise.weatherhistory.service
 
 import android.util.Log
 import io.ktor.client.HttpClient

@@ -11,11 +11,13 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.wise.weatherhistory.MainViewModel
+import kotlinx.coroutines.FlowPreview
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, FlowPreview::class)
 @Composable
-fun Search(viewModel: MainViewModel){
+fun Search(viewModel: MainViewModel = hiltViewModel()){
 
     val searchText by viewModel.searchText.collectAsState("")
     val isSearching by viewModel.isSearching.collectAsState()

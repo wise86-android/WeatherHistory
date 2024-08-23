@@ -1,5 +1,7 @@
-package com.wise.weatherhistory.model
+package com.wise.weatherhistory.service
 
+import com.wise.weatherhistory.model.Location
+import com.wise.weatherhistory.model.WeatherData
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
 import io.ktor.http.HttpHeaders
@@ -47,7 +49,9 @@ class KTorWeatherHistoryServiceTest {
         runBlocking {
             val response = KTorWeatherHistoryService(buildHttpClient( mockEngine)).getWeatherData(location, range)
             assertEquals(response.size, 120)
-            assertEquals(response[119],WeatherData(time= LocalDateTime.of(2024,3,1,23,0), temperature=7.1f, precipitation=0.1f, rain=0.1f, showers=0.0f, snowfall=0.0f, snowDepth=0.0f))
+            assertEquals(response[119],
+                WeatherData(time= LocalDateTime.of(2024,3,1,23,0), temperature=7.1f, precipitation=0.1f, rain=0.1f, showers=0.0f, snowfall=0.0f, snowDepth=0.0f)
+            )
         }
     }
 

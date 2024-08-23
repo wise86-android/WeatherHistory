@@ -12,7 +12,7 @@ import androidx.compose.runtime.setValue
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.wise.weatherhistory.model.WeatherQuerySettings
+import com.wise.weatherhistory.model.WeatherQuerySettingsService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
@@ -22,7 +22,7 @@ import java.time.Duration
 import javax.inject.Inject
 
 @HiltViewModel
-class SettingsViewModel @Inject constructor(private val dataStore:WeatherQuerySettings) : ViewModel(){
+class SettingsViewModel @Inject constructor(private val dataStore:WeatherQuerySettingsService) : ViewModel(){
     val pastDays = dataStore.getLastTimeRange().map { it.toDays() }.stateIn(scope = viewModelScope, initialValue = 7L, started = SharingStarted.WhileSubscribed(5000))
 
     fun setPastDay(value:Long){

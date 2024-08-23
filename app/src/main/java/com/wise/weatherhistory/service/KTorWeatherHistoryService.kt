@@ -1,10 +1,10 @@
-package com.wise.weatherhistory.model
+package com.wise.weatherhistory.service
 
+import com.wise.weatherhistory.model.Location
+import com.wise.weatherhistory.model.WeatherData
+import com.wise.weatherhistory.model.WeatherHistoryService
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
-import io.ktor.client.engine.HttpClientEngine
-import io.ktor.client.engine.cio.CIO
-import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.request.get
 import kotlinx.serialization.Serializable
 import java.net.URL
@@ -13,7 +13,8 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
-class KTorWeatherHistoryService @Inject constructor(private val httpClient: HttpClient) : WeatherHistoryService {
+class KTorWeatherHistoryService @Inject constructor(private val httpClient: HttpClient) :
+    WeatherHistoryService {
 
     private val baseUrl = URL("https://api.open-meteo.com/v1/forecast")
 
@@ -62,7 +63,7 @@ class KTorWeatherHistoryService @Inject constructor(private val httpClient: Http
         val latitude:Float,
         val longitude:Float,
         val elevation:Float,
-        val hourly:WeatherHourlyDataApiResponse
+        val hourly: WeatherHourlyDataApiResponse
     )
 
 }

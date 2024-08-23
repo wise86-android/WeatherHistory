@@ -1,4 +1,4 @@
-package com.wise.weatherhistory.model.previewUtils
+package com.wise.weatherhistory.ui.previewUtils
 
 import com.wise.weatherhistory.model.WeatherData
 import java.time.LocalDateTime

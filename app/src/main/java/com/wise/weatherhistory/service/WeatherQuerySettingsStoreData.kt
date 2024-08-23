@@ -1,4 +1,4 @@
-package com.wise.weatherhistory.model
+package com.wise.weatherhistory.service
 
 import android.content.Context
 import android.util.Log
@@ -8,13 +8,15 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.wise.weatherhistory.model.Location
+import com.wise.weatherhistory.model.WeatherQuerySettingsService
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.encodeToString
 import java.time.Duration
 import kotlinx.serialization.json.Json
 
-class WeatherQuerySettingsStoreData(private val context: Context) : WeatherQuerySettings {
+class WeatherQuerySettingsStoreData(private val context: Context) : WeatherQuerySettingsService {
     private val Context.dataStore: DataStore<Preferences> by preferencesDataStore("time_range_settings")
 
     val TIME_RANGE_DAY = longPreferencesKey("time_range_days")

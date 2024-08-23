@@ -15,7 +15,7 @@ import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.formatter.IAxisValueFormatter
 import com.wise.weatherhistory.model.WeatherData
-import com.wise.weatherhistory.model.previewUtils.randomListWeatherData
+import com.wise.weatherhistory.ui.previewUtils.randomListWeatherData
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter

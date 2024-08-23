@@ -1,5 +1,6 @@
-package com.wise.weatherhistory.model
+package com.wise.weatherhistory.service
 
+import com.wise.weatherhistory.model.GeocodingService
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
 import io.ktor.http.HttpHeaders
@@ -15,11 +16,14 @@ class KTorGeocodingServiceTest{
     fun `parameters is passed correctly`() {
         runBlocking {
             val mockEngine = MockEngine { request ->
-                respond(JSON_RESPONSE,
+                respond(
+                    JSON_RESPONSE,
                 headers = headersOf(HttpHeaders.ContentType, "application/json")
                 )
             }
-            KTorGeocodingService(buildHttpClient(mockEngine)).getLocations("xxx", GeocodingService.RequestParameter(10))
+            KTorGeocodingService(buildHttpClient(mockEngine)).getLocations("xxx",
+                GeocodingService.RequestParameter(10)
+            )
             mockEngine.requestHistory.first().also {
                 assertEquals(it.method, HttpMethod.Get)
                 assertEquals(it.url.parameters["name"], "xxx")

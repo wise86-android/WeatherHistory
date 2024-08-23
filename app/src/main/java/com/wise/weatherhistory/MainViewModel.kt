@@ -4,11 +4,9 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.wise.weatherhistory.model.GeocodingService
-import com.wise.weatherhistory.model.KTorGeocodingService
-import com.wise.weatherhistory.model.KTorWeatherHistoryService
 import com.wise.weatherhistory.model.Location
 import com.wise.weatherhistory.model.WeatherHistoryService
-import com.wise.weatherhistory.model.WeatherQuerySettings
+import com.wise.weatherhistory.model.WeatherQuerySettingsService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -31,7 +29,7 @@ import javax.inject.Inject
 @HiltViewModel
 class MainViewModel @Inject constructor(private val geocodingService: GeocodingService,
                                 private val historyService: WeatherHistoryService,
-                                private val querySettings: WeatherQuerySettings) : ViewModel() {
+                                private val querySettings: WeatherQuerySettingsService) : ViewModel() {
 
 
 
