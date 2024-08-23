@@ -6,4 +6,5 @@ data class Location(
     val elevation:Float,
     val name: String,
     val country: String,
+    val region:String? = null
 )

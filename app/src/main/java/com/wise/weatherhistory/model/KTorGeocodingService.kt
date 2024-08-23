@@ -3,13 +3,14 @@ package com.wise.weatherhistory.model
 import io.ktor.client.call.body
 import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.engine.cio.CIO
+import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.request.get
 
 import kotlinx.serialization.Serializable
 
 import java.net.URL
 
-class KTorGeocodingService(engine: HttpClientEngine = CIO.create() ) : GeocodingService{
+class KTorGeocodingService(engine: HttpClientEngine = OkHttp.create() ) : GeocodingService{
 
     private val httpClient = buildHttpClient(engine)
     private val baseUrl = URL("https://geocoding-api.open-meteo.com/v1/search")
@@ -22,7 +23,7 @@ class KTorGeocodingService(engine: HttpClientEngine = CIO.create() ) : Geocoding
             url {
                 parameters.append("name", locationName)
                 parameters.append("count",requestParameter.requestLimit.toString())
-                    //append("language",requestParameter.locale.language)
+                parameters.append("language",requestParameter.locale.language)
                 parameters.append("format","json")
 
             }
@@ -37,7 +38,8 @@ class KTorGeocodingService(engine: HttpClientEngine = CIO.create() ) : Geocoding
             Location(
                 latitude = it.latitude,
                 longitude = it.longitude,
-                name = it.name,
+                name = it.admin3 ?: it.name,
+                region = it.admin1,
                 country = it.country,
                 elevation = it.elevation
             )
@@ -59,6 +61,10 @@ class KTorGeocodingService(engine: HttpClientEngine = CIO.create() ) : Geocoding
         val longitude: Float,              // #05
         val elevation: Float,              // #07
         val country: String?=null,                        // #19
+        val admin1:String?=null,
+        val admin2:String?=null,
+        val admin3:String?=null,
+        val admin4:String?=null,
     )
 
 }
