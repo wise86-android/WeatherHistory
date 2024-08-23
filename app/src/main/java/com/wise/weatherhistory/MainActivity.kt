@@ -11,11 +11,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -45,6 +48,7 @@ import com.wise.weatherhistory.model.KTorWeatherHistoryService
 import com.wise.weatherhistory.model.Location
 import com.wise.weatherhistory.model.WeatherData
 import com.wise.weatherhistory.ui.components.Search
+import com.wise.weatherhistory.ui.components.TemperaturePlot
 import com.wise.weatherhistory.ui.theme.WeatherHistoryTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
@@ -57,6 +61,7 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.ZoneOffset
 
+@OptIn(ExperimentalMaterial3Api::class)
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -69,9 +74,18 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    Scaffold(topBar = { Search(viewModel) }){
-                        Text(text = "Weather", modifier = Modifier.padding(it))
-                        Text(text = "data: " + meteoData.size)
+                    Scaffold(topBar = { TopAppBar( colors = topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        titleContentColor = MaterialTheme.colorScheme.primary,
+                    ),title = { Text(text = "title")}) }){
+                        Column(modifier = Modifier.padding(it)) {
+                            Search(viewModel)
+                            Text(text = "Weather")
+                            if(meteoData.size > 0) {
+                                TemperaturePlot(data = meteoData)
+                            }
+                        }
+
                     }
                 }
             }
@@ -113,8 +127,12 @@ class MainViewModel : ViewModel() {
     }
 
     fun takeFirstResult(text: String) {
-        _searchText.value = text
-        _isSearching.value = !_isSearching.value
+        viewModelScope.launch {
+            _locationList.collectLatest {
+                it.firstOrNull()?.let(::onSelectLocation)
+            }
+        }
+
     }
 
     fun onToogleSearch() {
@@ -127,7 +145,6 @@ class MainViewModel : ViewModel() {
     fun onSelectLocation(location: Location){
         _isSearching.value = !_isSearching.value
         _searchText.update { location.name }
-        Log.d("Vm",location.toString())
         viewModelScope.launch {
             val data = KTorWeatherHistoryService().getWeatherData(location, lastWeek())
             _meteoData.update { data }
@@ -139,56 +156,6 @@ class MainViewModel : ViewModel() {
 fun lastWeek():ClosedRange<LocalDate>{
     val today = LocalDate.now()
     return today.minusDays(1L)..today
-}
-
-
-
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    var requestName by remember { mutableStateOf("Padova") }
-    var results by remember { mutableStateOf(emptyList<Location>()) }
-    val firstResult = results.firstOrNull()
-    val scope = rememberCoroutineScope()
-    LaunchedEffect(key1 = requestName){
-        scope.launch{
-            results=KTorGeocodingService().getLocations(requestName)
-            Log.d("location","Result"+results)
-        }
-    }
-
-    var weatherData by remember { mutableStateOf(emptyList<WeatherData>()) }
-    LaunchedEffect(key1 = firstResult){
-        scope.launch (Dispatchers.IO){
-            if(firstResult!=null) {
-                weatherData = KTorWeatherHistoryService().getWeatherData(firstResult,LocalDate.now().minusDays(1)..LocalDate.now())
-            }
-        }
-    }
-
-    val temperature by remember {
-        derivedStateOf {
-            val x = weatherData.mapIndexed{ index, weatherData ->  entryOf(index,weatherData.temperature) }
-            ChartEntryModelProducer(x)
-        }
-    }
-
-    Column {
-        TextField(value = requestName, onValueChange = { requestName = it })
-        LazyColumn {
-            items(results) {
-                Text(text = "${it.name} -> ${it.country}")
-            }
-        }
-        Text(text = "Weather")
-        Chart(
-            chart = columnChart(spacing = 1.dp),
-            chartModelProducer = temperature,
-            startAxis = rememberStartAxis(),
-            bottomAxis = rememberBottomAxis(),
-        )
-        mpChart(data = weatherData)
-    }
 }
 
 
@@ -215,211 +182,3 @@ fun mpChart(data:List<WeatherData>){
             }
     )
 }
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    WeatherHistoryTheme {
-        Greeting("Android")
-    }
-}
-
-
-private val countries = listOf(
-    "Afghanistan",
-    "Albania",
-    "Algeria",
-    "Andorra",
-    "Angola",
-    "Antigua and Barbuda",
-    "Argentina",
-    "Armenia",
-    "Australia",
-    "Austria",
-    "Azerbaijan",
-    "Bahamas",
-    "Bahrain",
-    "Bangladesh",
-    "Barbados",
-    "Belarus",
-    "Belgium",
-    "Belize",
-    "Benin",
-    "Bhutan",
-    "Bolivia",
-    "Bosnia and Herzegovina",
-    "Botswana",
-    "Brazil",
-    "Brunei",
-    "Bulgaria",
-    "Burkina Faso",
-    "Burundi",
-    "Cambodia",
-    "Cameroon",
-    "Canada",
-    "Cape Verde",
-    "Central African Republic",
-    "Chad",
-    "Chile",
-    "China",
-    "Colombia",
-    "Comoros",
-    "Congo (Brazzaville)",
-    "Congo (Kinshasa)",
-    "Costa Rica",
-    "Croatia",
-    "Cuba",
-    "Cyprus",
-    "Czech Republic",
-    "Denmark",
-    "Djibouti",
-    "Dominica",
-    "Dominican Republic",
-    "Ecuador",
-    "Egypt",
-    "El Salvador",
-    "Equatorial Guinea",
-    "Eritrea",
-    "Estonia",
-    "Eswatini",
-    "Ethiopia",
-    "Fiji",
-    "Finland",
-    "France",
-    "Gabon",
-    "Gambia",
-    "Georgia",
-    "Germany",
-    "Ghana",
-    "Greece",
-    "Grenada",
-    "Guatemala",
-    "Guinea",
-    "Guinea-Bissau",
-    "Guyana",
-    "Haiti",
-    "Holy See",
-    "Honduras",
-    "Hungary",
-    "Iceland",
-    "India",
-    "Indonesia",
-    "Iran",
-    "Iraq",
-    "Ireland",
-    "Israel",
-    "Italy",
-    "Ivory Coast",
-    "Jamaica",
-    "Japan",
-    "Jordan",
-    "Kazakhstan",
-    "Kenya",
-    "Kiribati",
-    "Kuwait",
-    "Kyrgyzstan",
-    "Laos",
-    "Latvia",
-    "Lebanon",
-    "Lesotho",
-    "Liberia",
-    "Libya",
-    "Liechtenstein",
-    "Lithuania",
-    "Luxembourg",
-    "Madagascar",
-    "Malawi",
-    "Malaysia",
-    "Maldives",
-    "Mali",
-    "Malta",
-    "Marshall Islands",
-    "Mauritania",
-    "Mauritius",
-    "Mexico",
-    "Micronesia",
-    "Moldova",
-    "Monaco",
-    "Mongolia",
-    "Montenegro",
-    "Morocco",
-    "Mozambique",
-    "Myanmar",
-    "Namibia",
-    "Nauru",
-    "Nepal",
-    "Netherlands",
-    "New Zealand",
-    "Nicaragua",
-    "Niger",
-    "Nigeria",
-    "North Korea",
-    "North Macedonia",
-    "Norway",
-    "Oman",
-    "Pakistan",
-    "Palau",
-    "Palestine State",
-    "Panama",
-    "Papua New Guinea",
-    "Paraguay",
-    "Peru",
-    "Philippines",
-    "Poland",
-    "Portugal",
-    "Qatar",
-    "Romania",
-    "Russia",
-    "Rwanda",
-    "Saint Kitts and Nevis",
-    "Saint Lucia",
-    "Saint Vincent and the Grenadines",
-    "Samoa",
-    "San Marino",
-    "Sao Tome and Principe",
-    "Saudi Arabia",
-    "Senegal",
-    "Serbia",
-    "Seychelles",
-    "Sierra Leone",
-    "Singapore",
-    "Slovakia",
-    "Slovenia",
-    "Solomon Islands",
-    "Somalia",
-    "South Africa",
-    "South Korea",
-    "South Sudan",
-    "Spain",
-    "Sri Lanka",
-    "Sudan",
-    "Suriname",
-    "Sweden",
-    "Switzerland",
-    "Syria",
-    "Taiwan",
-    "Tajikistan",
-    "Tanzania",
-    "Thailand",
-    "Timor-Leste",
-    "Togo",
-    "Tonga",
-    "Trinidad and Tobago",
-    "Tunisia",
-    "Turkey",
-    "Turkmenistan",
-    "Tuvalu",
-    "Uganda",
-    "Ukraine",
-    "United Arab Emirates",
-    "United Kingdom",
-    "United States of America",
-    "Uruguay",
-    "Uzbekistan",
-    "Vanuatu",
-    "Venezuela",
-    "Vietnam",
-    "Yemen",
-    "Zambia",
-    "Zimbabwe"
-)
