@@ -1,21 +1,14 @@
 package com.wise.weatherhistory.ui
 
-import android.util.Log
 import androidx.compose.foundation.layout.Column
-import androidx.compose.material3.RangeSlider
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.FloatState
-import androidx.compose.runtime.MutableFloatState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.datastore.dataStore
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.wise.weatherhistory.model.WeatherQuerySettings
@@ -27,7 +20,7 @@ import java.time.Duration
 
 
 class SettingsViewModel(private val dataStore:WeatherQuerySettings) : ViewModel(){
-    val pastDays = dataStore.getDefaultTimeRange().map { it.toDays() }.stateIn(scope = viewModelScope, initialValue = 7L, started = SharingStarted.WhileSubscribed(5000))
+    val pastDays = dataStore.getLastTimeRange().map { it.toDays() }.stateIn(scope = viewModelScope, initialValue = 7L, started = SharingStarted.WhileSubscribed(5000))
 
     fun setPastDay(value:Long){
         viewModelScope.launch {

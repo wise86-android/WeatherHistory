@@ -5,6 +5,9 @@ import java.time.Duration
 
 interface WeatherQuerySettings {
     suspend fun setDefaultTimeRange(defaultPassedTime:Duration)
-    fun getDefaultTimeRange(): Flow<Duration>
+    fun getLastTimeRange(): Flow<Duration>
+
+    fun getLastLocation():Flow<Location>
+    suspend fun setLastLocation(location: Location)
 
 }
