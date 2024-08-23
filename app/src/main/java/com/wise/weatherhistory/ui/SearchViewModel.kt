@@ -1,7 +1,5 @@
-package com.wise.weatherhistory
+package com.wise.weatherhistory.ui
 
-import android.util.Log
-import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.wise.weatherhistory.model.GeocodingService
