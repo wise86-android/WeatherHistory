@@ -37,9 +37,12 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.switchMap
+import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -93,7 +96,7 @@ class MainViewModel(private val querySettings: WeatherQuerySettings) : ViewModel
 
     //second state the text typed by the user
     private val _searchText = MutableStateFlow("")
-    val searchText = isSearching.map { if(it){ _searchText } else sele
+    val searchText = isSearching.flatMapLatest { searching -> if(searching) { _searchText } else{ selectedLocation.map { it.name } }}
 
     //third state the list to be filtered
     val locationList =

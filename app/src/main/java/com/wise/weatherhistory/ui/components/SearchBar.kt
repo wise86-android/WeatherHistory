@@ -17,7 +17,7 @@ import com.wise.weatherhistory.MainViewModel
 @Composable
 fun Search(viewModel: MainViewModel){
 
-    val searchText by viewModel.searchText.collectAsState()
+    val searchText by viewModel.searchText.collectAsState("")
     val isSearching by viewModel.isSearching.collectAsState()
     val locations by viewModel.locationList.collectAsState()
 
