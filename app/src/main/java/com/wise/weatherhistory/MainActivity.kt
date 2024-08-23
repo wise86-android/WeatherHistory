@@ -25,6 +25,7 @@ import com.wise.weatherhistory.model.KTorGeocodingService
 import com.wise.weatherhistory.model.KTorWeatherHistoryService
 import com.wise.weatherhistory.model.Location
 import com.wise.weatherhistory.model.WeatherData
+import com.wise.weatherhistory.model.WeatherQuerySettings
 import com.wise.weatherhistory.model.WeatherQuerySettingsStoreData
 import com.wise.weatherhistory.ui.SettingsPage
 import com.wise.weatherhistory.ui.SettingsViewModel
@@ -36,6 +37,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.last
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -46,8 +49,9 @@ import java.time.ZoneOffset
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val viewModel = MainViewModel()
-        val settingsViewModel = SettingsViewModel(WeatherQuerySettingsStoreData(this))
+        val querySettings = WeatherQuerySettingsStoreData(this)
+        val viewModel = MainViewModel(querySettings)
+        val settingsViewModel = SettingsViewModel(querySettings)
         setContent {
             val meteoData by viewModel.meteoData.collectAsState()
             val timePickerState = rememberDateRangePickerState(
@@ -83,7 +87,7 @@ class MainActivity : ComponentActivity() {
 
 
 @FlowPreview
-class MainViewModel : ViewModel() {
+class MainViewModel(private val querySettings: WeatherQuerySettings) : ViewModel() {
 
     val geocodingService = KTorGeocodingService()
 
@@ -134,14 +138,11 @@ class MainViewModel : ViewModel() {
         _isSearching.value = !_isSearching.value
         _searchText.update { location.name }
         viewModelScope.launch {
-            val data = KTorWeatherHistoryService().getWeatherData(location, lastWeek())
-            _meteoData.update { data }
+            querySettings.getDefaultTimeRange()
+                .map { val today = LocalDate.now(); today.minusDays(it.toDays()).. today }
+                .map { timeRange-> KTorWeatherHistoryService().getWeatherData(location, timeRange)
+            }.collectLatest (_meteoData::emit)
         }
     }
 
-}
-
-fun lastWeek():ClosedRange<LocalDate>{
-    val today = LocalDate.now()
-    return today.minusDays(1L)..today
 }
