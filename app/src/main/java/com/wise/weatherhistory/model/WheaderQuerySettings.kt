@@ -9,5 +9,4 @@ interface WeatherQuerySettingsService {
 
     fun getLastLocation():Flow<Location>
     suspend fun setLastLocation(location: Location)
-
 }

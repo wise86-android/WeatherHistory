@@ -8,7 +8,7 @@ import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 
 @OptIn(ExperimentalCoroutinesApi::class)
-fun <T> TestScope.collectingStateFlow(stateFlow: StateFlow<T>, test:TestScope.(stateFlow:StateFlow<T>) -> Unit){
+suspend fun <T> TestScope.collectingStateFlow(stateFlow: StateFlow<T>, test:suspend TestScope.(stateFlow:StateFlow<T>) -> Unit){
     val collectJob = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
         stateFlow.collect()
     }

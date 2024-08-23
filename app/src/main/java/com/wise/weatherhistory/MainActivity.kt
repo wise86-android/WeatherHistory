@@ -24,6 +24,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.repeatOnLifecycle
 import com.wise.weatherhistory.ui.SearchPage
 import com.wise.weatherhistory.ui.SettingsPage
 import com.wise.weatherhistory.ui.theme.WeatherHistoryTheme

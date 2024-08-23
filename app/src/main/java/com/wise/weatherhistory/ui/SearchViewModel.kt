@@ -39,7 +39,8 @@ class SearchViewModel @Inject constructor(private val geocodingService: Geocodin
 
     //second state the text typed by the user
     private val _searchText = MutableStateFlow("")
-    val searchText = isSearching.flatMapLatest { searching -> if(searching) { _searchText } else{ selectedLocation.map { it.name } }}
+    val searchText = isSearching.flatMapLatest {
+        searching -> if(searching) { _searchText } else{ selectedLocation.map { it.name } }}
 
     //third state the list to be filtered
     val locationList =
@@ -70,6 +71,7 @@ class SearchViewModel @Inject constructor(private val geocodingService: Geocodin
         )
 
     fun onSearchTextChange(text: String) {
+        _isSearching.update { true }
         _searchText.update { text }
     }
 
@@ -82,7 +84,7 @@ class SearchViewModel @Inject constructor(private val geocodingService: Geocodin
 
     fun onSearchStateChange(newSearchState: Boolean) {
         _isSearching.value = newSearchState
-        if (!_isSearching.value) {
+        if (!newSearchState) {
             onSearchTextChange("")
         }
     }

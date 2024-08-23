@@ -26,9 +26,7 @@ class KTorGeocodingService @Inject constructor(private val httpClient: HttpClien
                 parameters.append("count",requestParameter.requestLimit.toString())
                 parameters.append("language",requestParameter.locale.language)
                 parameters.append("format","json")
-
             }
-
         }
 
         val data = response.body<Response>()

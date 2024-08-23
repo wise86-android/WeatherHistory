@@ -41,7 +41,7 @@ class PreviewLocationResultListItemProvider: PreviewParameterProvider<Location> 
         Location(1.0f,2.0f,2100.0f,"name","country")
     )
 }
-@Preview
+@Preview(showBackground = true)
 @Composable
 fun PreviewLocationResultListItem(@PreviewParameter(PreviewLocationResultListItemProvider::class) location: Location){
     LocationResultListItem(location) {}

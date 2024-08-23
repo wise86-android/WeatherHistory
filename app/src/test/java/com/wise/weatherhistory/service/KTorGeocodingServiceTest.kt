@@ -15,7 +15,7 @@ class KTorGeocodingServiceTest{
     @Test
     fun `parameters is passed correctly`() {
         runBlocking {
-            val mockEngine = MockEngine { request ->
+            val mockEngine = MockEngine { _ ->
                 respond(
                     JSON_RESPONSE,
                 headers = headersOf(HttpHeaders.ContentType, "application/json")
@@ -36,7 +36,7 @@ class KTorGeocodingServiceTest{
     @Test
     fun `response is passed correctly`() {
         runBlocking {
-            val mockEngine = MockEngine { request ->
+            val mockEngine = MockEngine { _ ->
                 respond(
                     JSON_RESPONSE,
                     headers = headersOf(HttpHeaders.ContentType, "application/json")
@@ -45,10 +45,10 @@ class KTorGeocodingServiceTest{
             val response = KTorGeocodingService(buildHttpClient(mockEngine)).getLocations("xxx")
             assertEquals(response.size,1)
             response.first().also {
-                assertEquals(it.country,"Germany")
-                assertEquals(it.name,"Berlin")
-                assertEquals(it.latitude,52.52437f)
-                assertEquals(it.longitude,13.41053f)
+                assertEquals("Germany",it.country)
+                assertEquals("Berlin, Stadt",it.name)
+                assertEquals(52.52437f,it.latitude)
+                assertEquals(13.41053f,it.longitude)
             }
         }
     }
