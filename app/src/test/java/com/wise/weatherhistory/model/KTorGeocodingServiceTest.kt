@@ -19,7 +19,7 @@ class KTorGeocodingServiceTest{
                 headers = headersOf(HttpHeaders.ContentType, "application/json")
                 )
             }
-            KTorGeocodingService(mockEngine).getLocations("xxx", GeocodingService.RequestParameter(10))
+            KTorGeocodingService(buildHttpClient(mockEngine)).getLocations("xxx", GeocodingService.RequestParameter(10))
             mockEngine.requestHistory.first().also {
                 assertEquals(it.method, HttpMethod.Get)
                 assertEquals(it.url.parameters["name"], "xxx")
@@ -38,7 +38,7 @@ class KTorGeocodingServiceTest{
                     headers = headersOf(HttpHeaders.ContentType, "application/json")
                 )
             }
-            val response = KTorGeocodingService(mockEngine).getLocations("xxx")
+            val response = KTorGeocodingService(buildHttpClient(mockEngine)).getLocations("xxx")
             assertEquals(response.size,1)
             response.first().also {
                 assertEquals(it.country,"Germany")

@@ -1,5 +1,6 @@
 package com.wise.weatherhistory.model
 
+import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.engine.cio.CIO
@@ -9,10 +10,10 @@ import io.ktor.client.request.get
 import kotlinx.serialization.Serializable
 
 import java.net.URL
+import javax.inject.Inject
 
-class KTorGeocodingService(engine: HttpClientEngine = OkHttp.create() ) : GeocodingService{
+class KTorGeocodingService @Inject constructor(private val httpClient: HttpClient ) : GeocodingService{
 
-    private val httpClient = buildHttpClient(engine)
     private val baseUrl = URL("https://geocoding-api.open-meteo.com/v1/search")
 
     override suspend fun getLocations(locationName: String, requestParameter: GeocodingService.RequestParameter): List<Location> {

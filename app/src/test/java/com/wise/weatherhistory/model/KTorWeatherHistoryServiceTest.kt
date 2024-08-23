@@ -13,19 +13,19 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 class KTorWeatherHistoryServiceTest {
-    val mockEngine = MockEngine {
+    private val mockEngine = MockEngine {
         respond(
             JSON_RESPONSE,
             headers = headersOf(HttpHeaders.ContentType, "application/json")
         )
     }
-    val location = Location(123.3f,3456.0f,78.0f,"name","country","region")
-    val range = LocalDate.of(2024,2,1)..LocalDate.of(2024,2,10)
+    private val location = Location(123.3f,3456.0f,78.0f,"name","country","region")
+    private val range = LocalDate.of(2024,2,1)..LocalDate.of(2024,2,10)
 
     @Test
     fun `parameters is passed correctly`() {
         runBlocking {
-            KTorWeatherHistoryService(mockEngine).getWeatherData(location, range)
+            KTorWeatherHistoryService(buildHttpClient( mockEngine)).getWeatherData(location, range)
 
             mockEngine.requestHistory.first().also {request ->
                 assertEquals(request.method, HttpMethod.Get)
@@ -45,7 +45,7 @@ class KTorWeatherHistoryServiceTest {
     @Test
     fun `response is passed correctly`() {
         runBlocking {
-            val response = KTorWeatherHistoryService(mockEngine).getWeatherData(location, range)
+            val response = KTorWeatherHistoryService(buildHttpClient( mockEngine)).getWeatherData(location, range)
             assertEquals(response.size, 120)
             assertEquals(response[119],WeatherData(time= LocalDateTime.of(2024,3,1,23,0), temperature=7.1f, precipitation=0.1f, rain=0.1f, showers=0.0f, snowfall=0.0f, snowDepth=0.0f))
         }
