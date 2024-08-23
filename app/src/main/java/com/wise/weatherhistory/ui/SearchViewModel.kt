@@ -1,6 +1,7 @@
 package com.wise.weatherhistory
 
 import android.util.Log
+import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.wise.weatherhistory.model.GeocodingService
@@ -13,6 +14,7 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flatMapLatest
@@ -27,9 +29,9 @@ import javax.inject.Inject
 @OptIn(ExperimentalCoroutinesApi::class)
 @FlowPreview
 @HiltViewModel
-class MainViewModel @Inject constructor(private val geocodingService: GeocodingService,
-                                private val historyService: WeatherHistoryService,
-                                private val querySettings: WeatherQuerySettingsService) : ViewModel() {
+class SearchViewModel @Inject constructor(private val geocodingService: GeocodingService,
+                                          private val historyService: WeatherHistoryService,
+                                          private val querySettings: WeatherQuerySettingsService) : ViewModel() {
 
 
 
@@ -45,7 +47,7 @@ class MainViewModel @Inject constructor(private val geocodingService: GeocodingS
     val locationList =
         _searchText
             .debounce(500)
-            .mapLatest { text-> geocodingService.getLocations(text,
+            .mapLatest { queryText-> geocodingService.getLocations(queryText,
                 GeocodingService.RequestParameter(4)
             ) }
             .stateIn(viewModelScope,
@@ -55,16 +57,18 @@ class MainViewModel @Inject constructor(private val geocodingService: GeocodingS
 
     private val selectedLocation= querySettings.getLastLocation()
 
-    private val daysToLoad = querySettings.getLastTimeRange()
-        .map { val today = LocalDate.now(); today.minusDays(it.toDays()).. today }
+    val daysToLoad = querySettings.getLastTimeRange()
+        .map { it.toDays() }
+        .stateIn(viewModelScope,SharingStarted.WhileSubscribed(300),0)
+
+    private val timeRangeToLoad = daysToLoad
+        .map { val today = LocalDate.now(); today.minusDays(it).. today }
 
     val meteoData = selectedLocation
-        .combine(daysToLoad,historyService::getWeatherData)
-        .map { Log.d("MainViewModel", "DataSize: ${it.size}");it }
+        .combine(timeRangeToLoad,historyService::getWeatherData)
         .stateIn(viewModelScope,
             SharingStarted.WhileSubscribed(300),
             emptyList(),
-
         )
 
     fun onSearchTextChange(text: String) {
@@ -72,11 +76,14 @@ class MainViewModel @Inject constructor(private val geocodingService: GeocodingS
     }
 
     fun takeFirstResult(text: String) {
-        locationList.value.firstOrNull()?.let(::onSelectLocation)
+        onSearchTextChange(text)
+        viewModelScope.launch {
+            locationList.collectLatest { it.firstOrNull()?.let(::onSelectLocation) }
+        }
     }
 
-    fun onToogleSearch() {
-        _isSearching.value = !_isSearching.value
+    fun onSearchStateChange(newSearchState: Boolean) {
+        _isSearching.value = newSearchState
         if (!_isSearching.value) {
             onSearchTextChange("")
         }

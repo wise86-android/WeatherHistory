@@ -23,7 +23,10 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(private val dataStore:WeatherQuerySettingsService) : ViewModel(){
-    val pastDays = dataStore.getLastTimeRange().map { it.toDays() }.stateIn(scope = viewModelScope, initialValue = 7L, started = SharingStarted.WhileSubscribed(5000))
+    val pastDays = dataStore.getLastTimeRange()
+        .map { it.toDays() }
+        .stateIn(scope = viewModelScope, initialValue = 7L,
+            started = SharingStarted.WhileSubscribed(5000))
 
     fun setPastDay(value:Long){
         viewModelScope.launch {
@@ -35,10 +38,13 @@ class SettingsViewModel @Inject constructor(private val dataStore:WeatherQuerySe
 @Composable
 fun SettingsPage(viewModel: SettingsViewModel = hiltViewModel()){
     val selectedValue by viewModel.pastDays.collectAsState()
-    var slideValue by remember { mutableFloatStateOf(selectedValue.toFloat()) }
+    var slideValue by remember(selectedValue) { mutableFloatStateOf(selectedValue.toFloat()) }
     Column {
-        Text(text = "select day")
-        Slider(value = slideValue, onValueChange = {slideValue = it} , onValueChangeFinished = {viewModel.setPastDay(slideValue.toLong())}, valueRange = 1.0f..30.0f , steps =30)
+        Text(text = "Display values in the last ${slideValue.toLong()} days")
+        Slider(value = selectedValue.toFloat(),
+            onValueChange = {slideValue = it} ,
+            onValueChangeFinished = {viewModel.setPastDay(slideValue.toLong())},
+            valueRange = 1.0f..30.0f , steps =30)
     }
 }
 
